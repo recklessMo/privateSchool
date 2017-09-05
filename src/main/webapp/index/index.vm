@@ -2,12 +2,12 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html lang="zh-CN" xml:lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml">
 <head>
+    <title>立体校园</title>
     <meta http-equiv="Content-Type" content="text/html; charset=GB2312"/>
 </head>
 <body>
 
-<h1>我的第一个标题</h1>
-<p>我的第一个段落。</p>
+<p>配置成功</p>
 
 </body>
 </html>

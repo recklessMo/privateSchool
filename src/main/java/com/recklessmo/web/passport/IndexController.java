@@ -22,15 +22,17 @@ public class IndexController {
     @Resource
     private OrgService orgService;
 
-    @PreAuthorize("hasAnyAuthority('login')")
+//    @PreAuthorize("hasAnyAuthority('login')")
     @RequestMapping(value = "/")
     public String index(Model model){
         DefaultUserDetails userDetails = ContextUtils.getLoginUserDetail();
-        model.addAttribute("current", userDetails.getId());
-        model.addAttribute("orgId", userDetails.getOrgId());
-        Org org = orgService.getOrg(userDetails.getOrgId());
-        model.addAttribute("orgName", org.getOrgName());
-        model.addAttribute("name", userDetails.getName());
+        if(userDetails != null) {
+            model.addAttribute("current", userDetails.getId());
+            model.addAttribute("orgId", userDetails.getOrgId());
+            Org org = orgService.getOrg(userDetails.getOrgId());
+            model.addAttribute("orgName", org.getOrgName());
+            model.addAttribute("name", userDetails.getName());
+        }
         return "index";
     }
 
