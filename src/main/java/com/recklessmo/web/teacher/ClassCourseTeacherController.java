@@ -3,10 +3,8 @@ package com.recklessmo.web.teacher;
 import com.recklessmo.model.course.AllClassCourseTeacherInfo;
 import com.recklessmo.model.course.SingleClassCourseTeacherInfo;
 import com.recklessmo.model.security.DefaultUserDetails;
-import com.recklessmo.model.setting.Course;
+import com.recklessmo.model.setting.*;
 import com.recklessmo.model.course.CourseTeacher;
-import com.recklessmo.model.setting.Grade;
-import com.recklessmo.model.setting.Group;
 import com.recklessmo.response.JsonResponse;
 import com.recklessmo.service.setting.CourseSettingService;
 import com.recklessmo.service.setting.GradeSettingService;
@@ -73,9 +71,11 @@ public class ClassCourseTeacherController {
         page.setPage(1);
         page.setCount(10000);
         List<Grade> gradeList = gradeSettingService.listAllGrade(userDetails.getOrgId());
-        List<Course> courseList = courseSettingService.listCourse(page);
+        List<CourseItemCustom> courseList = null;
+        //List<CourseItemCustom> courseList = courseSettingService.listCourse(page);
         AllClassCourseTeacherInfo allClassCourseTeacherInfo = new AllClassCourseTeacherInfo();
-        allClassCourseTeacherInfo.setCourseList(courseList);
+        //allClassCourseTeacherInfo.setCourseList(courseList);
+        allClassCourseTeacherInfo.setCourseList(null);
         List<SingleClassCourseTeacherInfo> singleClassCourseTeacherInfoList = new LinkedList<>();
         gradeList.forEach(grade->{
             List<Group> groupList = grade.getClassList();
@@ -86,9 +86,9 @@ public class ClassCourseTeacherController {
                 singleClassCourseTeacherInfo.setGradeId(grade.getGradeId());
                 singleClassCourseTeacherInfo.setGradeName(grade.getGradeName());
                 List<CourseTeacher> courseTeacherList = new LinkedList<>();
-                for(Course course : courseList){
+                for(CourseItemCustom course : courseList){
                     CourseTeacher courseTeacher = new CourseTeacher();
-                    courseTeacher.setCourseId(course.getCourseId());
+                    //courseTeacher.setCourseId(course.getCourseId());
                     courseTeacher.setCourseName(course.getCourseName());
                     CourseTeacher value = group.getCourseTeacherMap().get(course.getCourseName());
                     courseTeacherList.add(value == null ? courseTeacher : value);

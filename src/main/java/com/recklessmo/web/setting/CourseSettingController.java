@@ -1,12 +1,14 @@
 package com.recklessmo.web.setting;
 
+import com.github.pagehelper.PageInfo;
+import com.recklessmo.generator.UUIDGenerator;
 import com.recklessmo.model.security.DefaultUserDetails;
-import com.recklessmo.model.setting.Term;
-import com.recklessmo.model.setting.Course;
+import com.recklessmo.model.setting.*;
 import com.recklessmo.response.JsonResponse;
 import com.recklessmo.service.setting.CourseSettingService;
 import com.recklessmo.util.ContextUtils;
 import com.recklessmo.web.webmodel.page.Page;
+import com.recklessmo.web.webmodel.page.PageQuery;
 import org.springframework.security.authentication.jaas.DefaultJaasAuthenticationProvider;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,28 +43,34 @@ public class CourseSettingController {
 
     @RequestMapping(value = "/course/list", method = {RequestMethod.POST})
     @ResponseBody
-    public JsonResponse listCourse(@RequestBody Page page){
+    public JsonResponse listCourse(@RequestBody PageQuery page){
         DefaultUserDetails userDetails = ContextUtils.getLoginUserDetail();
-        page.setOrgId(userDetails.getOrgId());
-        int count = courseSettingService.listCourseCount(page);
-        List<Course> CourseList = courseSettingService.listCourse(page);
-        return new JsonResponse(200, CourseList, count);
+        Long orgId = userDetails.getOrgId();
+        page.setOrgId(orgId);
+        CourseItemCustom courseItemCustom = new CourseItemCustom();
+        courseItemCustom.setOrgId(orgId);
+        PageInfo<CourseItemCustom> pages = courseSettingService.queryByPage(courseItemCustom,page);
+        //Integer pageNum = pages.getPageNum();
+        Integer lastPage = pages.getLastPage();
+
+        List<CourseItemCustom> courseList = pages.getList();
+        return new JsonResponse(200, courseList, lastPage);
     }
 
-    @RequestMapping(value = "/course/listStandard", method = {RequestMethod.POST})
+    /*@RequestMapping(value = "/course/listStandard", method = {RequestMethod.POST})
     @ResponseBody
     public JsonResponse listStandard(@RequestBody Page page){
         DefaultUserDetails userDetails = ContextUtils.getLoginUserDetail();
         page.setOrgId(userDetails.getOrgId());
-        List<Course> courseList = courseSettingService.listCourse(page);
+        List<CourseItemCustom> courseList = courseSettingService.listCourse(page);
         page.setOrgId(0);
-        List<Course> StandardCourseList = courseSettingService.listCourse(page);
+        List<CourseItemCustom> StandardCourseList = courseSettingService.listCourse(page);
         StandardCourseList.stream().forEach(item -> {
-            Optional<Course> temp = courseList.stream().filter(t -> t.getCourseId() == item.getCourseId()).findAny();
+            Optional<CourseItemCustom> temp = courseList.stream().filter(t -> t.getCourseId() == item.getCourseId()).findAny();
             item.setHasImport(temp.isPresent());
         });
         return new JsonResponse(200, StandardCourseList, StandardCourseList.size());
-    }
+    }*/
 
     @RequestMapping(value = "/course/import", method = {RequestMethod.POST})
     @ResponseBody
@@ -80,13 +88,30 @@ public class CourseSettingController {
         return new JsonResponse(200, null, null);
     }
 
+    @RequestMapping(value = "/course/addOne",method = {RequestMethod.POST})
+    @ResponseBody
+    public JsonResponse addOneCourse(@RequestBody CourseItemCustom courseItemCustom) throws Exception{
+
+        DefaultUserDetails userDetails = ContextUtils.getLoginUserDetail();
+
+        courseItemCustom.setOrgId(userDetails.getOrgId());
+
+        if(courseItemCustom != null||courseItemCustom.getCourseName()!=null)
+            courseSettingService.addOneCourse(courseItemCustom);
+
+        return new JsonResponse(200, null, null);
+
+    }
+
+
     @RequestMapping(value = "/course/delete", method = {RequestMethod.POST})
     @ResponseBody
-    public JsonResponse deleteCourse(@RequestBody long courseId){
+    public JsonResponse deleteCourse(@RequestBody CourseItem courseItem) throws Exception{
         DefaultUserDetails userDetails = ContextUtils.getLoginUserDetail();
-        Course course = courseSettingService.getCourseByCourseIdAndOrgId(courseId, userDetails.getOrgId());
-        if(course != null){
-            courseSettingService.deleteCourse(course.getId());
+
+        CourseItemCustom courseItemCustom = courseSettingService.getCourseByCourseIdAndOrgId(courseItem.getCourseId(),userDetails.getOrgId());
+        if(courseItem != null){
+            courseSettingService.deleteCourse(courseItemCustom.getId());
         }
         return new JsonResponse(200, null, null);
     }
