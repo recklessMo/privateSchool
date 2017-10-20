@@ -2,10 +2,7 @@ package com.recklessmo.web.setting;
 
 import com.recklessmo.model.score.inner.CourseGapSetting;
 import com.recklessmo.model.security.DefaultUserDetails;
-import com.recklessmo.model.setting.Course;
-import com.recklessmo.model.setting.Grade;
-import com.recklessmo.model.setting.Group;
-import com.recklessmo.model.setting.Job;
+import com.recklessmo.model.setting.*;
 import com.recklessmo.response.JsonResponse;
 import com.recklessmo.service.setting.CourseSettingService;
 import com.recklessmo.service.setting.GradeSettingService;
@@ -85,7 +82,8 @@ public class DicController {
         page.setOrgId(defaultUserDetails.getOrgId());
         page.setPage(1);
         page.setCount(100);
-        List<Course> courseList = courseSettingService.listCourse(page);
+        //List<CourseItemCustom> courseList = courseSettingService.listCourse(page);
+        List<CourseItemCustom> courseList = null;
         return new JsonResponse(200, courseList, null);
     }
 

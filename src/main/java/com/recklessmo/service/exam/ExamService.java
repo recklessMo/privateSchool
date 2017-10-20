@@ -3,6 +3,7 @@ package com.recklessmo.service.exam;
 import com.recklessmo.dao.exam.ExamDAO;
 import com.recklessmo.model.exam.Exam;
 import com.recklessmo.model.setting.Course;
+import com.recklessmo.model.setting.CourseItemCustom;
 import com.recklessmo.model.setting.Grade;
 import com.recklessmo.model.setting.Group;
 import com.recklessmo.service.setting.CourseSettingService;
@@ -81,8 +82,10 @@ public class ExamService {
         });
         Page coursePage = new Page();
         coursePage.setOrgId(orgId);
-        List<Course> courseList = courseSettingService.listCourse(coursePage);
-        Map<Long, String> courseMap = courseList.stream().collect(Collectors.toMap(Course::getCourseId, course -> course.getCourseName()));
+        List<CourseItemCustom> courseList=null;
+        //List<CourseItemCustom> courseList = courseSettingService.listCourse(coursePage);
+        Map<Long, String> courseMap = null;
+                //courseList.stream().collect(Collectors.toMap(Course::getCourseId, course -> course.getCourseName()));
         examList.stream().forEach(exam -> {
             Grade grade = gradeMap.get(exam.getGradeId());
             if(grade == null){

@@ -4,28 +4,83 @@
 <mapper namespace="com.recklessmo.dao.setting.CourseSettingDAO">
 
     <sql id = "courseColumns">
-        id, course_id, course_name, type, org_id, deleted
+        id, org_id, course_id, course_name, course_diff, course_desc, deleted
     </sql>
 
     <sql id = "courseColumnsWithoutId">
-        course_id, course_name, type, org_id, deleted
+        org_id, course_id, course_name, course_diff, course_desc
     </sql>
 
-    <insert id="addCourse">
-        replace into course
-        (
-          <include refid="courseColumnsWithoutId"/>
-        )
-        values(#{courseId}, #{courseName}, #{type}, #{orgId}, #{deleted})
+    <sql id = "courseSelectQuery">
+        org_id,couser_id,course_name,course_diff,course_desc
+    </sql>
+
+    <sql id="courseAddKey">
+        <trim suffixOverrides=",">
+
+                <if test="courseId !=null and courseId!=''">
+                    course_id,
+                </if>
+                <if test="orgId != null ">
+                    org_id,
+                </if>
+                <if test="courseName!=null and courseName!=''">
+                    course_name,
+                </if>
+                <if test="courseDiff!=null and courseDiff!=''">
+                    course_diff,
+                </if>
+                <if test="courseDesc!=null and courseDesc!=''">
+                    course_desc,
+                </if>
+
+        </trim>
+    </sql>
+
+    <sql id="courseAddValue">
+        <trim suffixOverrides=",">
+
+                <if test="courseId !=null and courseId !=''">
+                    #{courseId},
+                </if>
+                <if test="orgId !=null">
+                    #{orgId},
+                </if>
+                <if test="courseName!=null and courseName!=''">
+                    #{courseName},
+                </if>
+                <if test="courseDiff!=null and courseDiff!=''">
+                    #{courseDiff},
+                </if>
+                <if test="courseDesc!=null and courseDesc!=''">
+                    #{courseDesc},
+                </if>
+
+        </trim>
+    </sql>
+
+    <insert id="addOneCourse" parameterType="com.recklessmo.model.setting.CourseItemCustom">
+        INSERT INTO course
+        (<include refid="courseAddKey"/>)
+        VALUES
+        (<include refid="courseAddValue"/>)
     </insert>
 
-    <select id="listCourse" resultType="com.recklessmo.model.setting.Course">
+    <select id="getCourseByCourseIdAndOrgId" resultType="com.recklessmo.model.setting.CourseItemCustom">
         select
         <include refid="courseColumns"/>
-        from course
-        where org_id = #{orgId} and deleted = 0
-        order by course_id asc
-        limit #{startIndex}, #{count}
+        from course where course_id = #{courseId} and org_id = #{orgId}
+    </select>
+
+    <update id="deleteCourse" parameterType="java.lang.Integer">
+        update course set deleted = 1 where id = #{id}
+    </update>
+
+    <select id="listCourse" parameterType="com.recklessmo.model.setting.CourseItemCustom" resultType="com.recklessmo.model.setting.CourseItemCustom">
+        select
+        <include refid="courseColumns"/>
+        from course where org_id=#{orgId} and deleted = 0
+        order by org_id
     </select>
 
     <select id="listCourseCount" resultType="java.lang.Integer">
@@ -34,16 +89,6 @@
         from course
         where org_id = #{orgId} and deleted = 0
     </select>
-
-    <select id="getCourseByCourseIdAndOrgId" resultType="com.recklessmo.model.setting.Course">
-        select
-        <include refid="courseColumns"/>
-        from course where course_id = #{courseId} and org_id = #{orgId}
-    </select>
-
-    <update id="deleteCourse">
-        update course set deleted = 1 where id = #{id}
-    </update>
 
     <select id="getStandardCourseList" resultType="com.recklessmo.model.setting.Course">
         select
