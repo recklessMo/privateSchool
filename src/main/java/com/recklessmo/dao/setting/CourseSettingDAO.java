@@ -5,6 +5,7 @@ import com.recklessmo.web.webmodel.page.Page;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by hpf on 8/17/16.
@@ -25,5 +26,9 @@ public interface CourseSettingDAO {
     //CourseItemCustom getCourseByCourseIdAndOrgId(CourseItemCustom courseItemCustom) throws Exception;
 
     List<Course> getStandardCourseList();
-    public void addOneCourse(CourseItemCustom courseItemCustom) throws Exception;
+    void addOneCourse(CourseItemCustom courseItemCustom) throws Exception;
+
+    void batchDelete(Map<String,Object> deleteParam) throws Exception;
+    void insertCourseList(@Param("courseList")List<CourseItemCustom> courseList) throws Exception;
+
 }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by hpf on 8/17/16.
@@ -70,4 +71,11 @@ public class CourseSettingService {
 
     public void addOneCourse(CourseItemCustom courseItemCustom) throws Exception {courseSettingDAO.addOneCourse(courseItemCustom);}
 
+    public void batchDelete(Map<String,Object> deleteParam) throws Exception{
+        courseSettingDAO.batchDelete(deleteParam);
+    }
+
+    public void isnertCourseList(List<CourseItemCustom> courseList) throws Exception{
+        courseSettingDAO.insertCourseList(courseList);
+    }
 }

@@ -58,6 +58,12 @@
 
         </trim>
     </sql>
+    <sql id="deleteFromList">
+        <foreach collection="list" item="courseId" index="index"
+            open="(" close=")" separator=",">
+            #{courseId}
+        </foreach>
+    </sql>
 
     <insert id="addOneCourse" parameterType="com.recklessmo.model.setting.CourseItemCustom">
         INSERT INTO course
@@ -65,7 +71,14 @@
         VALUES
         (<include refid="courseAddValue"/>)
     </insert>
-
+    <insert id="insertCourseList" parameterType="com.recklessmo.model.setting.CourseItemCustom">
+        INSERT INTO course
+        (<include refid="courseColumnsWithoutId"/> )
+        VALUES
+        <foreach collection="courseList" item="course" separator=",">
+            (#{course.orgId},#{course.courseId},#{course.courseName},#{course.courseDiff},#{course.courseDesc})
+        </foreach>
+    </insert>
     <select id="getCourseByCourseIdAndOrgId" resultType="com.recklessmo.model.setting.CourseItemCustom">
         select
         <include refid="courseColumns"/>
@@ -75,7 +88,12 @@
     <update id="deleteCourse" parameterType="java.lang.Integer">
         update course set deleted = 1 where id = #{id}
     </update>
-
+    <update id="batchDelete" parameterType="java.util.Map">
+        update course set deleted = 1
+        where course_id in
+         <include refid="deleteFromList"/>
+        and org_id=#{orgId}
+    </update>
     <select id="listCourse" parameterType="com.recklessmo.model.setting.CourseItemCustom" resultType="com.recklessmo.model.setting.CourseItemCustom">
         select
         <include refid="courseColumns"/>
