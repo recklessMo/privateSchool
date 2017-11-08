@@ -26,6 +26,7 @@ import com.recklessmo.web.webmodel.page.ScoreListPage;
 import com.recklessmo.web.webmodel.page.StudentPage;
 import net.sf.jett.transform.ExcelTransformer;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -37,8 +38,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -50,7 +52,6 @@ import java.util.stream.Collectors;
 
 
 /**
- *
  * 用于文件上传
  * Created by hpf on 9/9/16.
  */
@@ -78,14 +79,13 @@ public class FileDownloadController {
 
 
     /**
-     *
      * 下载成绩录入模板
      *
      * @param response
      * @throws Exception
      */
     @RequestMapping(value = "/score/downloadExcel", method = {RequestMethod.POST, RequestMethod.GET})
-    public void scoreFileDownload(@RequestParam("examId")long examId,  HttpServletResponse response) throws Exception{
+    public void scoreFileDownload(@RequestParam("examId") long examId, HttpServletResponse response) throws Exception {
         DefaultUserDetails userDetails = ContextUtils.getLoginUserDetail();
         //根据考试所选定的科目来进行模板表格
         Exam exam = examService.getExamById(userDetails.getOrgId(), examId);
@@ -93,11 +93,11 @@ public class FileDownloadController {
         beans.put("columns", exam.getCourseNameList());
         //根据考试选定的年级范围, 来将学生的学号姓名等自动导出
         List<StudentInfo> studentInfoList = studentService.getStudentListByGradeIdAndClassId(userDetails.getOrgId(), exam.getGradeId(), exam.getClassId());
-        studentInfoList.sort((a, b)->{
+        studentInfoList.sort((a, b) -> {
             int gradeResult = a.getGradeName().compareTo(b.getGradeName());
-            if(gradeResult == 0){
+            if (gradeResult == 0) {
                 int classResult = a.getClassName().compareTo(b.getClassName());
-                if(classResult == 0){
+                if (classResult == 0) {
                     return a.getSid().compareTo(b.getSid());
                 }
                 return classResult;
@@ -105,18 +105,17 @@ public class FileDownloadController {
             return gradeResult;
         });
         beans.put("dataList", studentInfoList);
-        returnFile(beans, response, "成绩导入", "score_import",  ".xlsx");
+        returnFile(beans, response, "成绩导入", "score_import", ".xlsx");
     }
 
     /**
-     *
      * 导出成绩单
      *
      * @param response
      * @throws Exception
      */
     @RequestMapping(value = "/score/export", method = {RequestMethod.POST, RequestMethod.GET})
-    public void scoreExport(@RequestParam("examId")long examId, @RequestParam("classId")long classId, HttpServletResponse response) throws Exception {
+    public void scoreExport(@RequestParam("examId") long examId, @RequestParam("classId") long classId, HttpServletResponse response) throws Exception {
         DefaultUserDetails userDetails = ContextUtils.getLoginUserDetail();
         //根据考试所选定的科目来进行模板表格
         Exam exam = examService.getExamById(userDetails.getOrgId(), examId);
@@ -143,8 +142,8 @@ public class FileDownloadController {
         scoreListPage.setExamId(examId);
         List<Score> tempList = scoreService.loadScoreList(scoreListPage);
         List<Score> scoreList = tempList;
-        if(classId != 0){
-            scoreList = tempList.stream().filter(o->o.getClassId() == classId).collect(Collectors.toList());
+        if (classId != 0) {
+            scoreList = tempList.stream().filter(o -> o.getClassId() == classId).collect(Collectors.toList());
         }
         scoreList.stream().forEach(score -> {
             List<String> temp = new LinkedList<>();
@@ -171,7 +170,6 @@ public class FileDownloadController {
     }
 
     /**
-     *
      * 导出进退步分析
      *
      * @param firstExamId
@@ -180,7 +178,7 @@ public class FileDownloadController {
      * @throws Exception
      */
     @RequestMapping(value = "/rankchange/export", method = {RequestMethod.POST, RequestMethod.GET})
-    public void rankchangeExport(@RequestParam("first")long firstExamId, @RequestParam("second")long secondExamId, HttpServletResponse response) throws Exception {
+    public void rankchangeExport(@RequestParam("first") long firstExamId, @RequestParam("second") long secondExamId, HttpServletResponse response) throws Exception {
         DefaultUserDetails userDetails = ContextUtils.getLoginUserDetail();
         Exam firstExam = examService.getExamById(userDetails.getOrgId(), firstExamId);
         Exam secondExam = examService.getExamById(userDetails.getOrgId(), secondExamId);
@@ -188,9 +186,9 @@ public class FileDownloadController {
         //根据考试所选定的科目来进行模板表格
         List<Score> firstList = scoreService.loadScoreByExamId(userDetails.getOrgId(), firstExamId);
         List<Score> secondList = scoreService.loadScoreByExamId(userDetails.getOrgId(), secondExamId);
-        DynamicTable dynamicTable = (DynamicTable)scoreAnalyseService.analyseRankChange(firstList, secondList);
+        DynamicTable dynamicTable = (DynamicTable) scoreAnalyseService.analyseRankChange(firstList, secondList);
         //表头
-        List<String> labelList = dynamicTable.getLabelList().stream().map(o->o.getTitle()).collect(Collectors.toList());
+        List<String> labelList = dynamicTable.getLabelList().stream().map(o -> o.getTitle()).collect(Collectors.toList());
         //数据
         List<List<String>> dataList = new LinkedList<>();
         dynamicTable.getDataList().stream().forEach(single -> {
@@ -209,7 +207,6 @@ public class FileDownloadController {
     }
 
     /**
-     *
      * 下载学生信息导入文件
      *
      * @param response
@@ -220,16 +217,23 @@ public class FileDownloadController {
         returnFile(null, response, "学生导入模板", "student_import", ".xlsx");
     }
 
+    /**
+     * 下载课程导入文件
+     * */
+    @RequestMapping(value = "/course/dowloadExcel",method = {RequestMethod.POST,RequestMethod.GET} )
+    public void courseFileDownload(HttpServletResponse response) throws Exception{
+        returnFile(null,response,"课程导入模板","course_import",".xlsx");
+    }
+
 
     /**
-     *
      * 导出学生信息文件
      *
      * @param response
      * @throws Exception
      */
     @RequestMapping(value = "/student/export", method = {RequestMethod.POST, RequestMethod.GET})
-    public void studentExport(@RequestParam("gradeId")long gradeId, @RequestParam("classId")long classId, HttpServletResponse response) throws Exception {
+    public void studentExport(@RequestParam("gradeId") long gradeId, @RequestParam("classId") long classId, HttpServletResponse response) throws Exception {
         DefaultUserDetails userDetails = ContextUtils.getLoginUserDetail();
         StudentPage studentPage = new StudentPage();
         studentPage.setOrgId(userDetails.getOrgId());
@@ -244,31 +248,30 @@ public class FileDownloadController {
         });
         Map<String, Object> beans = Maps.newHashMap();
         beans.put("dataList", studentAllInfoList);
-        returnFile(beans, response, "学生信息导出", "student_export", ".xlsx");
+
     }
 
 
+
     /**
-     *
-     * 下载账号信息导入文件
+     * 下载课程导入文件
      *
      * @param response
-     * @throws Exception
+     * @throws Exceptiojn
      */
-    @RequestMapping(value = "/account/downloadExcel", method = {RequestMethod.POST, RequestMethod.GET})
-    public void accountFileDownload(HttpServletResponse response) throws Exception {
-        returnFile(null, response, "账号导入模板", "account_import", ".xlsx");
+    @RequestMapping(value = "/account/downloadCourseExcel", method = {RequestMethod.POST, RequestMethod.GET})
+    public void student1FileDownload(HttpServletResponse response) throws Exception {
+        returnFile(null, response, "学生导入模板", "student_import", ".xlsx");
     }
 
     /**
-     *
      * 测试
      *
      * @param response
      * @throws Exception
      */
     @RequestMapping(value = "/test", method = {RequestMethod.POST, RequestMethod.GET})
-    public void getFileContent(HttpServletResponse response) throws Exception{
+    public void getFileContent(HttpServletResponse response) throws Exception {
         List<Org> orgList = new LinkedList<>();
         Org org1 = new Org();
         org1.setOrgName("xxxx");
@@ -282,8 +285,8 @@ public class FileDownloadController {
     }
 
 
-    private void returnFile(Map<String, Object> beans, HttpServletResponse response, String fileName, String templateName, String fileExt) throws Exception{
-        if(beans == null){
+    private void returnFile(Map<String, Object> beans, HttpServletResponse response, String fileName, String templateName, String fileExt) throws Exception {
+        if (beans == null) {
             beans = new HashMap<>();
         }
         response.setStatus(200);
@@ -300,7 +303,4 @@ public class FileDownloadController {
     }
 
 
-    public static void main(String[] args){
-
-    }
 }

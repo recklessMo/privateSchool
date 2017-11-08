@@ -17,9 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Created by hpf on 8/17/16.
@@ -114,6 +112,29 @@ public class CourseSettingController {
             courseSettingService.deleteCourse(courseItemCustom.getId());
         }
         return new JsonResponse(200, null, null);
+    }
+
+    @RequestMapping(value = "/course/batchDelete", method = {RequestMethod.POST})
+    @ResponseBody
+    public JsonResponse batchDelete(@RequestBody String[] courseIds) throws Exception{
+
+        DefaultUserDetails userDetails = ContextUtils.getLoginUserDetail();
+
+        Long orgId = userDetails.getOrgId();
+
+        List<String> list = Arrays.asList(courseIds);
+
+        Map<String,Object> deleteParam = new HashMap<String,Object>();
+
+        deleteParam.put("list",list);
+        deleteParam.put("orgId",orgId);
+
+        if(deleteParam!=null&&deleteParam.size()!=0&&!deleteParam.isEmpty()){
+
+            courseSettingService.batchDelete(deleteParam);
+        }
+
+        return new JsonResponse(200,null,null);
     }
 
 }
